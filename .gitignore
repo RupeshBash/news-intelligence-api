@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment
+.env
+
+# Models
+models/*.joblib
+models/*.pkl
+
+# Large data
+data/raw/
+data/full/
+*.zip
+
+# ChromaDB
+chroma_db/
+.chroma/
+
+# OS
+.DS_Store
+Thumbs.db
