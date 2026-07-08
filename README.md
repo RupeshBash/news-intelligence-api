@@ -12,3 +12,13 @@ This project classifies news articles into categories and retrieves semantically
 - Performed light text cleanup
 - Calculated character count and word count
 - Saved a small sample CSV for future testing
+
+## Day 2 Progress
+
+- Created a balanced subset of the AG News dataset
+- Used 2,000 rows from each class
+- Split data into train and test sets
+- Converted text into TF-IDF features
+- Trained a Logistic Regression baseline model
+- Achieved 88.9% test accuracy
+- Tested prediction on custom news text
