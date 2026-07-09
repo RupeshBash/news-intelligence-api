@@ -3,3 +3,4 @@ numpy
 datasets
 jupyter
 scikit-learn
+joblib
