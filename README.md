@@ -22,3 +22,20 @@ This project classifies news articles into categories and retrieves semantically
 - Trained a Logistic Regression baseline model
 - Achieved 88.9% test accuracy
 - Tested prediction on custom news text
+
+## Day 3 Progress
+
+- Evaluated the baseline model using accuracy, precision, recall, and F1-score
+- Created a confusion matrix to inspect classification mistakes
+- Saved the trained vectorizer, model, and label mapping using joblib
+- Loaded the saved model package and tested prediction again
+- Created `src/predict.py` for reusable prediction
+- Achieved 89.25% test accuracy
+
+## Day 4 Progress
+
+- Compared Logistic Regression with Multinomial Naive Bayes
+- Used the same balanced dataset and train/test split for fair comparison
+- Evaluated both models using accuracy, precision, recall, F1-score, and confusion matrix
+- Compared predictions on custom news text
+- Naive Bayes performed bettern than Logistic Regression.
