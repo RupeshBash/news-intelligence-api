@@ -35,7 +35,8 @@ This project classifies news articles into categories and retrieves semantically
 ## Day 4 Progress
 
 - Compared Logistic Regression with Multinomial Naive Bayes
-- Used the same balanced dataset and train/test split for fair comparison
-- Evaluated both models using accuracy, precision, recall, F1-score, and confusion matrix
-- Compared predictions on custom news text
-- Naive Bayes performed bettern than Logistic Regression.
+- Used the same balanced dataset, train/test split, and TF-IDF vectorizer for fair comparison
+- Logistic Regression accuracy: 85.69%
+- Multinomial Naive Bayes accuracy: 85.81%
+- Naive Bayes performed slightly better, but both models were very close
+- Both models mainly confused Business and Sci/Tech articles
