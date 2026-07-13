@@ -40,11 +40,37 @@ def predict_category(text):
 
     return predicted_id, predicted_label
 
+
+def predict_category_with_confidence(text):
+    """Predict category and confidence for one text input."""
+    model_package = load_model_package()
+
+    vectorizer = model_package["vectorizer"]
+    model = model_package["model"]
+    id_to_label = model_package["id_to_label"]
+
+    cleaned_text = clean_text(text)
+    text_tfidf = vectorizer.transform([cleaned_text])
+
+    predicted_id = model.predict(text_tfidf)[0]
+    predicted_label = id_to_label[predicted_id]
+
+    #Predict_prob returns probability for each class
+    probabilities = model.predict_proba(text_tfidf)[0]
+
+    highest_probability = probabilities.max()
+    confidence_percentage = highest_probability * 100
+
+    return predicted_id, predicted_label, confidence_percentage
+
+
+
 if __name__ == "__main__":
     sample_text = "Apple announces new AI features for iphone users"
 
-    predicted_id, predicted_label = predict_category(sample_text)
+    predicted_id, predicted_label, confidence = predict_category_with_confidence(sample_text)
 
     print("Input text:", sample_text)
     print("Predicted class ID:", predicted_id)
     print("Predicted category:", predicted_label)
+    print("Confidence:", f"{confidence:2f}%")

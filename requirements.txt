@@ -4,3 +4,4 @@ datasets
 jupyter
 scikit-learn
 joblib
+streamlit

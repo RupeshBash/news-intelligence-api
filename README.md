@@ -40,3 +40,44 @@ This project classifies news articles into categories and retrieves semantically
 - Multinomial Naive Bayes accuracy: 85.81%
 - Naive Bayes performed slightly better, but both models were very close
 - Both models mainly confused Business and Sci/Tech articles
+
+## Day 5 Progress
+
+- Refactored notebook code into reusable Python scripts
+- Created `src/preprocessing.py` for text cleaning and preparation
+- Created `src/train_model.py` for model training and saving
+- Updated `src/predict.py` for loading the saved model and making predictions
+- Saved the TF-IDF vectorizer, classifier, and label mapping together using joblib
+- Confirmed that prediction works without retraining the model
+- Learned to run package files from the project root using `python -m`
+
+Main workflow:
+
+```text
+preprocessing.py → clean and prepare text
+train_model.py   → train and save the model
+predict.py       → load the saved model and predict
+
+## Day 6 Progress
+
+- Created a Streamlit interface for news category prediction
+- Added a text area for entering a news headline or short article
+- Connected the Streamlit app to the saved joblib model
+- Added prediction confidence using `predict_proba()`
+- Displayed the predicted category, confidence percentage, and class ID
+- Added validation for empty input
+- Added basic error handling for missing model files and prediction failures
+- Confirmed that the Streamlit app loads the saved model instead of retraining it
+
+### Day 6 Workflow
+
+```text
+User enters news text
+        ↓
+Streamlit sends the text to predict.py
+        ↓
+Saved TF-IDF vectorizer transforms the text
+        ↓
+Saved Logistic Regression model predicts the category
+        ↓
+App displays category and confidence
