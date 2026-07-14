@@ -1,83 +1,257 @@
 # AI News Classifier + Similar Article Search API
 
-This project classifies news articles into categories and retrieves semantically similar articles.
+A laptop-friendly AI/ML project that currently classifies English news text
+into one of four categories using TF-IDF and Logistic Regression.
 
-## Day 1 Progress
+The completed Week 1 version includes model training, evaluation, reusable
+prediction scripts, prediction confidence, and a Streamlit web interface.
 
-- Loaded Kaggle AG News dataset
-- Checked dataset shape, columns, labels, and missing values
-- Renamed columns for cleaner Python usage
-- Mapped class numbers to readable category names
-- Combined title and description into one text field
-- Performed light text cleanup
-- Calculated character count and word count
-- Saved a small sample CSV for future testing
+Semantic similar-article search using SentenceTransformers and ChromaDB is
+planned for Week 2.
 
-## Day 2 Progress
+## Current Features
 
-- Created a balanced subset of the AG News dataset
-- Used 2,000 rows from each class
-- Split data into train and test sets
-- Converted text into TF-IDF features
-- Trained a Logistic Regression baseline model
-- Achieved 88.9% test accuracy
-- Tested prediction on custom news text
+- Accepts a news headline or short article
+- Performs light text cleaning
+- Converts text using the saved TF-IDF vectorizer
+- Predicts one of four news categories
+- Displays prediction confidence
+- Displays the predicted class ID
+- Provides a Streamlit browser interface
+- Handles empty user input
+- Loads the saved model without retraining
 
-## Day 3 Progress
+## Supported Categories
 
-- Evaluated the baseline model using accuracy, precision, recall, and F1-score
-- Created a confusion matrix to inspect classification mistakes
-- Saved the trained vectorizer, model, and label mapping using joblib
-- Loaded the saved model package and tested prediction again
-- Created `src/predict.py` for reusable prediction
-- Achieved 89.25% test accuracy
+| Class ID | Category |
+|---:|---|
+| 1 | World |
+| 2 | Sports |
+| 3 | Business |
+| 4 | Sci/Tech |
 
-## Day 4 Progress
-
-- Compared Logistic Regression with Multinomial Naive Bayes
-- Used the same balanced dataset, train/test split, and TF-IDF vectorizer for fair comparison
-- Logistic Regression accuracy: 85.69%
-- Multinomial Naive Bayes accuracy: 85.81%
-- Naive Bayes performed slightly better, but both models were very close
-- Both models mainly confused Business and Sci/Tech articles
-
-## Day 5 Progress
-
-- Refactored notebook code into reusable Python scripts
-- Created `src/preprocessing.py` for text cleaning and preparation
-- Created `src/train_model.py` for model training and saving
-- Updated `src/predict.py` for loading the saved model and making predictions
-- Saved the TF-IDF vectorizer, classifier, and label mapping together using joblib
-- Confirmed that prediction works without retraining the model
-- Learned to run package files from the project root using `python -m`
-
-Main workflow:
+## Machine Learning Pipeline
 
 ```text
-preprocessing.py → clean and prepare text
-train_model.py   → train and save the model
-predict.py       → load the saved model and predict
+AG News dataset
+        ↓
+Column renaming and label mapping
+        ↓
+Title and description combined
+        ↓
+Light text cleaning
+        ↓
+Balanced dataset sampling
+        ↓
+Train/test split
+        ↓
+TF-IDF vectorization
+        ↓
+Logistic Regression training
+        ↓
+Model evaluation
+        ↓
+Model package saved with joblib
+        ↓
+Reusable prediction function
+        ↓
+Streamlit interface
+```
 
-## Day 6 Progress
+## Main Files
 
-- Created a Streamlit interface for news category prediction
-- Added a text area for entering a news headline or short article
-- Connected the Streamlit app to the saved joblib model
-- Added prediction confidence using `predict_proba()`
-- Displayed the predicted category, confidence percentage, and class ID
-- Added validation for empty input
-- Added basic error handling for missing model files and prediction failures
-- Confirmed that the Streamlit app loads the saved model instead of retraining it
+| File | Responsibility |
+|---|---|
+| `src/preprocessing.py` | Cleans and prepares news text |
+| `src/train_model.py` | Trains, evaluates, and saves the classifier |
+| `src/predict.py` | Loads the saved model and makes predictions |
+| `app/streamlit_app.py` | Provides the Streamlit user interface |
+| `models/news_classifier_pipeline.joblib` | Stores the vectorizer, classifier, and label mapping |
 
-### Day 6 Workflow
+## Training Configuration
+
+The stronger saved classifier currently uses:
+
+- Dataset: AG News
+- Rows per category: 6,000
+- Total rows: 24,000
+- Training rows: 19,200
+- Test rows: 4,800
+- Train/test ratio: 80/20
+- TF-IDF maximum features: 10,000
+- Classifier: Logistic Regression
+- Maximum iterations: 1,000
+
+## Model Results
+
+### Baseline Evaluation
+
+One baseline evaluation produced:
+
+- Test accuracy: 89.25%
+- World F1-score: 0.90
+- Sports F1-score: 0.94
+- Business F1-score: 0.87
+- Sci/Tech F1-score: 0.86
+
+The main confusion occurred between Business and Sci/Tech because these
+categories can share vocabulary related to companies, products, software,
+markets, and technology.
+
+### Model Comparison
+
+Logistic Regression and Multinomial Naive Bayes were compared using the same
+prepared dataset, train/test split, and TF-IDF features.
+
+| Model | Accuracy |
+|---|---:|
+| Logistic Regression | 85.69% |
+| Multinomial Naive Bayes | 85.81% |
+
+Multinomial Naive Bayes performed slightly better in this experiment, but the
+difference was very small. Both models performed almost the same.
+
+Results varied slightly between separately prepared experiment runs. Fair model
+comparisons were made using the same dataset split and feature representation.
+
+## Project Structure
 
 ```text
-User enters news text
-        ↓
-Streamlit sends the text to predict.py
-        ↓
-Saved TF-IDF vectorizer transforms the text
-        ↓
-Saved Logistic Regression model predicts the category
-        ↓
-App displays category and confidence
+news-intelligence-api/
+├── app/
+│   └── streamlit_app.py
+├── data/
+│   ├── raw/
+│   ├── sample_news.csv
+│   └── README.md
+├── docs/
+│   └── week1_progress.md
+├── models/
+│   └── news_classifier_pipeline.joblib
+├── notebooks/
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_model_experiment.ipynb
+│   ├── 03_evaluation_model_saving.ipynb
+│   └── 04_model_comparison.ipynb
+├── screenshots/
+│   ├── confusion_matrix.png
+│   ├── streamlit_home.png
+│   ├── streamlit_prediction.png
+│   └── streamlit_validation.png
+├── src/
+│   ├── __init__.py
+│   ├── preprocessing.py
+│   ├── train_model.py
+│   └── predict.py
+├── tests/
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone <your-repository-url>
+cd news-intelligence-api
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+### 3. Activate the virtual environment on Windows
+
+```powershell
+.venv\Scripts\activate
+```
+
+### 4. Install dependencies
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## Run the Prediction Script
+
+From the project root:
+
+```bash
+python -m src.predict
+```
+
+## Run the Streamlit App
+
+From the project root:
+
+```bash
+python -m streamlit run app/streamlit_app.py
+```
+
+The application normally opens at:
+
+```text
+http://localhost:8501
+```
+
+## Sample Prediction
+
+Input:
+
+```text
+The device can process complex tasks faster while using less energy than the
+previous version.
+```
+
+Output:
+
+```text
+Predicted category: Sci/Tech
+Confidence: 81.83%
+```
+
+The exact confidence depends on the saved model version.
+
+## Screenshots
+
+### Streamlit Home Page
+
+![Streamlit home page](screenshots/streamlit_home.png)
+
+### Prediction Result
+
+![Streamlit prediction result](screenshots/streamlit_prediction.png)
+
+### Confusion Matrix
+
+![Confusion matrix](screenshots/confusion_matrix.png)
+
+## Current Limitations
+
+- The classifier supports only four AG News categories.
+- It was trained mainly on English news text.
+- TF-IDF learns statistical word patterns but does not deeply understand meaning.
+- Very short or ambiguous input may produce unreliable predictions.
+- High confidence does not guarantee that a prediction is correct.
+- Similar-article search has not yet been implemented.
+- The Streamlit application currently runs locally.
+
+## Planned Improvements
+
+- Generate article embeddings using `all-MiniLM-L6-v2`
+- Store article embeddings in ChromaDB
+- Return the top five semantically similar articles
+- Combine classification and similar-article search
+- Add FastAPI endpoints
+- Add automated tests
+- Add a basic Dockerfile
+
+## Development Progress
+
+Detailed Week 1 development notes are available here:
+
+[View Week 1 Progress](docs/week1_progress.md)
