@@ -255,3 +255,8 @@ The exact confidence depends on the saved model version.
 Detailed Week 1 development notes are available here:
 
 [View Week 1 Progress](docs/week1_progress.md)
+
+## Development Progress
+
+- [View Week 1 Progress](docs/week1_progress.md)
+- [View Week 2 Progress](docs/week2_progress.md)

@@ -29,3 +29,6 @@ chroma_db/
 # OS
 .DS_Store
 Thumbs.db
+
+data/processed/article_embeddings.npy
+data/processed/article_metadata.csv
