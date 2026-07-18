@@ -403,3 +403,119 @@ Cosine similarity compares embedding directions.
 In this experiment, the related sentence received a higher score than the
 unrelated sentence, showing that the pretrained model captured semantic
 relationships between differently worded sentences.
+
+
+---
+
+## Day 9 Progress — Generate Article Embeddings
+
+### What I completed
+
+- Loaded the AG News training dataset
+- Preserved the original dataset row index
+- Created a balanced sample of 1,000 articles
+- Selected 250 articles from each category
+- Preserved article IDs, titles, text, labels, and source-row metadata
+- Loaded the pretrained `all-MiniLM-L6-v2` model
+- Generated embeddings using a batch size of 32
+- Normalized the generated embeddings
+- Confirmed that every article had one matching embedding
+- Confirmed that all article IDs were unique
+- Saved the embedding matrix as a NumPy `.npy` file
+- Saved the matching metadata as a CSV file
+- Loaded both generated files again to verify their alignment
+- Created `src/generate_embeddings.py`
+
+### Day 9 Workflow
+
+```text
+AG News training data
+        ↓
+Rename and validate columns
+        ↓
+Combine title and description
+        ↓
+Light text cleaning
+        ↓
+250 articles from each category
+        ↓
+1,000 balanced articles
+        ↓
+Batch embedding generation
+        ↓
+Embedding matrix and metadata
+        ↓
+Save and reload for verification
+```
+
+### Configuration
+
+```text
+Embedding model: sentence-transformers/all-MiniLM-L6-v2
+Rows per category: 250
+Total articles: 1,000
+Batch size: 32
+Random state: 42
+Embedding dimensions: 384
+Normalized embeddings: Yes
+```
+
+### Actual Result
+
+```text
+Original dataset shape: (120000, 3)
+Usable dataset shape: (120000, 6)
+
+World articles: 250
+Sports articles: 250
+Business articles: 250
+Sci/Tech articles: 250
+
+Article count: 1,000
+Embedding count: 1,000
+Embedding matrix shape: (1000, 384)
+Embedding data type: float32
+Generation time: 11.43 seconds
+Article IDs unique: Yes
+Saved-file alignment: Correct
+```
+
+### Generated Files
+
+```text
+data/processed/article_embeddings.npy
+data/processed/article_metadata.csv
+```
+
+These generated artifacts are ignored by Git because they can be recreated by
+running:
+
+```powershell
+python -m src.generate_embeddings
+```
+
+### Main Insight
+
+Article metadata and embeddings must remain aligned by row position:
+
+```text
+metadata row 0 ↔ embedding row 0
+metadata row 1 ↔ embedding row 1
+metadata row 2 ↔ embedding row 2
+```
+
+If this order changes, an article may become connected to the wrong embedding.
+
+Batch processing allowed the model to process smaller groups of articles while
+still returning one final embedding matrix containing all 1,000 results.
+
+### Current Limitation
+
+The embeddings are currently stored as local NumPy and CSV files.
+
+The project has not yet:
+
+- stored the articles in ChromaDB
+- created a reusable vector-search function
+- generated a query embedding for article search
+- returned the top five similar articles
