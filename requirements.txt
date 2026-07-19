@@ -8,4 +8,3 @@ streamlit
 matplotlib
 sentence-transformers
 chromadb==1.5.9
-data/chroma_db/     #Local ChromaDB persistent storage

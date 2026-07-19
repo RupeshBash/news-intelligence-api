@@ -260,3 +260,7 @@ Detailed Week 1 development notes are available here:
 
 - [View Week 1 Progress](docs/week1_progress.md)
 - [View Week 2 Progress](docs/week2_progress.md)
+
+- Generated 384-dimensional embeddings for 1,000 balanced AG News articles
+- Stored 1,000 article embeddings and metadata in persistent ChromaDB storage
+- Added validation for record alignment, unique IDs, and collection persistence

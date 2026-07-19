@@ -22,8 +22,10 @@ data/raw/
 data/full/
 *.zip
 
-# ChromaDB
-chroma_db/
+# Local ChromaDB persistent storage
+data/chroma_db/
+
+# ChromaDB cache
 .chroma/
 
 # OS

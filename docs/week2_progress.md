@@ -519,3 +519,71 @@ The project has not yet:
 - created a reusable vector-search function
 - generated a query embedding for article search
 - returned the top five similar articles
+
+---
+
+## Day 10 Progress — Store Embeddings in ChromaDB
+
+### What I completed
+
+- Installed ChromaDB in the project virtual environment
+- Loaded the Day 9 embeddings and metadata
+- Validated 1,000 metadata rows against 1,000 embeddings
+- Prepared aligned IDs, documents, metadata dictionaries, and embeddings
+- Created persistent local ChromaDB storage
+- Created the `ag_news_articles` collection
+- Configured cosine distance
+- Disabled automatic embedding generation
+- Inserted records in batches of 100
+- Confirmed that 1,000 records were stored
+- Retrieved one article directly by ID
+- Created `src/store_embeddings.py`
+
+### Actual Result
+
+```text
+Embedding shape: (1000, 384)
+Embedding dtype: float32
+Metadata shape: (1000, 7)
+
+ID count: 1000
+Document count: 1000
+Metadata count: 1000
+Embedding count: 1000
+
+Collection name: ag_news_articles
+Stored record count: 1000
+Sample retrieval by ID: Passed
+```
+
+### Retrieved Sample
+
+```text
+Article ID: ag_news_train_84248
+Category: Business
+Class index: 3
+Source row ID: 84248
+Title: News Corp. Acts to Block Bids (Reuters)
+```
+
+### Main Insight
+
+Every ChromaDB record keeps four aligned values:
+
+```text
+one unique ID
+one document
+one metadata dictionary
+one embedding
+```
+
+The collection persists locally inside:
+
+```text
+data/chroma_db
+```
+
+### Current Limitation
+
+The database stores the 1,000 articles, but the project does not yet generate
+query embeddings or return ranked similar articles.
