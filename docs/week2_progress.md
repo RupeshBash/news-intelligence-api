@@ -337,7 +337,7 @@ You are sending unauthenticated requests to the HF Hub.
 
 This was only a warning.
 
-The model downloaded and loaded successfully, so an Hugging Face token was not
+The model downloaded and loaded successfully, so a Hugging Face token was not
 required for this small local experiment.
 
 ### Mistake Pattern
@@ -587,3 +587,38 @@ data/chroma_db
 
 The database stores the 1,000 articles, but the project does not yet generate
 query embeddings or return ranked similar articles.
+
+
+---
+
+## Day 11 Progress — Similar Article Search
+
+### What I completed
+
+- Loaded the persistent `ag_news_articles` ChromaDB collection
+- Confirmed that the collection contains 1,000 records
+- Loaded `all-MiniLM-L6-v2`
+- Cleaned and validated a new query
+- Generated a normalized 384-dimensional query embedding
+- Queried ChromaDB using `query_embeddings`
+- Returned the five closest articles
+- Retrieved IDs, documents, metadata, and cosine distances
+- Validated result alignment and unique IDs
+- Converted ChromaDB's nested response into ranked dictionaries
+- Displayed the best matching article
+- Created `src/search_articles.py`
+
+### Workflow
+
+```text
+Query text
+    ↓
+Text cleaning
+    ↓
+MiniLM query embedding: (384,)
+    ↓
+Persistent ChromaDB collection
+    ↓
+Top five nearest articles
+    ↓
+Ranked result dictionaries
