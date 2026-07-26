@@ -264,3 +264,12 @@ Detailed Week 1 development notes are available here:
 - Generated 384-dimensional embeddings for 1,000 balanced AG News articles
 - Stored 1,000 article embeddings and metadata in persistent ChromaDB storage
 - Added validation for record alignment, unique IDs, and collection persistence
+
+- Combined news-category prediction and semantic article search
+- Added reusable analysis output with category, confidence, and similar articles
+
+### Run combined news analysis
+
+```powershell
+python -m src.analyze_news
+```

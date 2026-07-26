@@ -589,36 +589,108 @@ The database stores the 1,000 articles, but the project does not yet generate
 query embeddings or return ranked similar articles.
 
 
----
 
 ## Day 11 Progress — Similar Article Search
 
 ### What I completed
 
-- Loaded the persistent `ag_news_articles` ChromaDB collection
-- Confirmed that the collection contains 1,000 records
-- Loaded `all-MiniLM-L6-v2`
-- Cleaned and validated a new query
-- Generated a normalized 384-dimensional query embedding
-- Queried ChromaDB using `query_embeddings`
-- Returned the five closest articles
-- Retrieved IDs, documents, metadata, and cosine distances
-- Validated result alignment and unique IDs
-- Converted ChromaDB's nested response into ranked dictionaries
-- Displayed the best matching article
 - Created `src/search_articles.py`
+- Loaded the persistent `ag_news_articles` collection
+- Confirmed that it contains 1,000 records
+- Loaded `all-MiniLM-L6-v2`
+- Cleaned and embedded a new query
+- Generated a normalized `(384,)` query vector
+- Returned the five nearest ChromaDB articles
+- Validated IDs, documents, metadata, and distances
+- Displayed ranked results and the best match
 
 ### Workflow
 
 ```text
 Query text
     ↓
-Text cleaning
+clean_text()
     ↓
-MiniLM query embedding: (384,)
+384-dimensional MiniLM embedding
     ↓
-Persistent ChromaDB collection
+ChromaDB cosine search
     ↓
-Top five nearest articles
-    ↓
-Ranked result dictionaries
+Top five ranked articles
+```
+
+### Actual Result
+
+```text
+Query:
+A company introduced a new computer chip that uses less electricity.
+
+Stored articles: 1,000
+Query embedding: (384,), float32
+Results returned: 5
+Search time: 0.0084 seconds
+
+Best match:
+HP moving deeper into consumer electronics arena
+
+Category: Business
+Distance: 0.5193
+Cosine similarity: 0.4807
+```
+
+### Key Concepts
+
+- Stored articles and queries must use the same embedding model.
+- ChromaDB returns nested lists because it supports multiple queries.
+- Values at the same index belong to the same result.
+- Lower cosine distance means a closer semantic match.
+- `cosine similarity = 1 - cosine distance`
+- Similarity is not a probability.
+
+### Current Limitation
+
+- Uses a fixed command-line query
+- Searches only 1,000 articles
+- No reranking or hybrid keyword search
+- Not yet connected to Streamlit or FastAPI
+
+### Mistake Pattern
+
+Spelling, capitalization, indentation, and incorrect metadata-field mapping
+caused most errors while writing the longer script.
+
+
+---
+
+## Day 12 Progress — Combined News Analysis
+
+### What I completed
+
+- Created `src/analyze_news.py`
+- Combined news classification and semantic search
+- Returned class index, category, confidence, and similar articles
+- Converted NumPy outputs into Python values
+- Kept analysis and display logic separate
+- Tested multiple news categories
+
+### Workflow
+
+```text
+News text
+   ├── classifier → category + confidence
+   └── MiniLM embedding → ChromaDB → similar articles
+```
+
+### Key Concept
+
+The classifier and semantic search solve different tasks.
+
+The classifier assigns one category to the input, while vector search retrieves
+articles with nearby semantic embeddings. Their category labels do not always
+need to match.
+
+### Current Limitation
+
+- Runs from the command line
+- Resources reload when the script starts
+- No API endpoint yet
+- No automated integration tests
