@@ -694,3 +694,58 @@ need to match.
 - Resources reload when the script starts
 - No API endpoint yet
 - No automated integration tests
+
+
+
+
+## Day 13 — Streamlit Integration
+
+### What I completed
+
+- connected the Streamlit interface to `analyze_news()`
+- displayed the predicted class index, category, and confidence
+- retrieved and displayed five semantically similar articles
+- displayed each article's category, cosine distance, and cosine similarity
+- cached the MiniLM model and ChromaDB resources using `st.cache_resource`
+- added a loading spinner, empty-input validation, empty-result handling, and useful error messages
+
+### Workflow
+
+```text
+Streamlit text input
+        ↓
+load cached MiniLM and ChromaDB resources
+        ↓
+analyze_news()
+        ↓
+classification summary
+        ↓
+similar-article results
+```
+
+### Actual result
+
+```text
+Input:
+A company introduced a new computer chip that uses less electricity.
+
+Predicted class index: 4
+Predicted category: Sci/Tech
+Confidence: 89.94%
+Similar articles returned: 5
+```
+
+The highest-ranked similar article was labelled Business. This is acceptable because classification and semantic retrieval solve different tasks.
+
+### Key concepts
+
+- `st.cache_resource` prevents expensive resources from loading again on every Streamlit rerun
+- `analyze_news()` keeps classification and retrieval logic outside the user interface
+- Streamlit receives structured data and decides how to present it
+- classifier confidence is different from cosine similarity
+- lower cosine distance represents a closer semantic match
+- classifier and retrieved-article categories do not always need to match
+
+### Current limitation
+
+The ChromaDB collection contains a balanced sample of 1,000 AG News articles rather than the complete dataset.

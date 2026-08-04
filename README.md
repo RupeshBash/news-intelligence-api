@@ -273,3 +273,28 @@ Detailed Week 1 development notes are available here:
 ```powershell
 python -m src.analyze_news
 ```
+
+## Features
+
+- predicts one of four AG News categories: World, Sports, Business, or Sci/Tech
+- uses TF-IDF and Logistic Regression for classification
+- displays the predicted class index and confidence percentage
+- generates semantic query embeddings using `all-MiniLM-L6-v2`
+- retrieves five similar stored articles from ChromaDB
+- displays article categories, cosine distances, and cosine similarities
+- provides an interactive Streamlit interface
+- validates empty input and displays useful error messages
+
+## Streamlit Interface
+
+The Streamlit application accepts a news headline or short article and displays:
+
+- predicted class index
+- predicted category
+- confidence percentage
+- five semantically similar articles
+- article category
+- cosine distance
+- cosine similarity
+
+![AI News Intelligence Streamlit interface](screenshots/day13_combined_streamlit_ui.png)
