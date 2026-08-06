@@ -749,3 +749,133 @@ The highest-ranked similar article was labelled Business. This is acceptable bec
 ### Current limitation
 
 The ChromaDB collection contains a balanced sample of 1,000 AG News articles rather than the complete dataset.
+
+
+---
+
+## Day 14 — Week 2 Review and Documentation
+
+### What I Completed
+
+- Reviewed all Week 2 scripts and their responsibilities
+- Compiled the embedding, storage, search, analysis, and Streamlit files
+- Verified that the persistent ChromaDB collection contains 1,000 articles
+- Tested standalone semantic article search
+- Tested the combined classification and retrieval workflow
+- Reviewed the Streamlit interface
+- Updated the Streamlit system details
+- Reviewed project dependencies and generated-file ignore rules
+- Updated the README with the complete Week 2 workflow
+- Removed outdated Week 1-only documentation
+
+### Complete Week 2 Workflow
+
+```text
+AG News sample
+        |
+        +--> MiniLM article embeddings
+                 |
+                 +--> Persistent ChromaDB collection
+                          |
+                          +--> Semantic article retrieval
+
+User news text
+        |
+        +--> TF-IDF + Logistic Regression
+        |        |
+        |        +--> Category + confidence
+        |
+        +--> MiniLM query embedding
+                 |
+                 +--> ChromaDB cosine search
+                          |
+                          +--> Similar articles
+        |
+        +--> analyze_news()
+                 |
+                 +--> Combined Streamlit result
+```
+
+### TF-IDF Versus MiniLM Embeddings
+
+```text
+TF-IDF
+- Represents word importance
+- Produces sparse vectors
+- Used by the news classifier
+
+MiniLM
+- Represents semantic meaning
+- Produces dense 384-dimensional vectors
+- Used for similar-article retrieval
+```
+
+### Classification Versus Retrieval
+
+```text
+Classification
+- Assigns one category to the input
+- Returns category and confidence
+
+Retrieval
+- Ranks stored articles by embedding closeness
+- Returns distance and cosine similarity
+```
+
+These are related tasks, but they are not the same.
+
+### Confidence Versus Cosine Similarity
+
+```text
+Classifier confidence
+- Measures model support for the predicted category
+
+Cosine similarity
+- Measures embedding closeness between two texts
+```
+
+Classifier confidence and cosine similarity are not interchangeable.
+
+### Verified Week 2 Results
+
+```text
+Embedding model: all-MiniLM-L6-v2
+Embedding dimension: 384
+Indexed articles: 1,000
+Articles per category: 250
+ChromaDB collection: ag_news_articles
+Distance method: cosine
+Default results returned: 5
+Standalone semantic search: working
+Combined news analysis: working
+Streamlit integration: working
+```
+
+### Current Limitations
+
+- The semantic index contains only 1,000 sampled articles
+- Semantic similarity does not guarantee genuine relevance
+- Classifier confidence does not guarantee correctness
+- The classifier and nearest article may have different category labels
+- Some development messages are still printed in the terminal
+- The system currently runs locally
+- FastAPI endpoints have not yet been implemented
+- Automated integration tests have not yet been added
+
+### Week 2 Outcome
+
+Week 2 successfully added semantic article retrieval to the classical news
+classification project.
+
+The project can now:
+
+- Classify news into one of four categories
+- Display prediction confidence
+- Generate semantic query embeddings
+- Search a persistent ChromaDB collection
+- Retrieve five similar articles
+- Display cosine distance and similarity
+- Combine classification and retrieval
+- Display the complete result through Streamlit
+
+Week 2 status: **Complete**

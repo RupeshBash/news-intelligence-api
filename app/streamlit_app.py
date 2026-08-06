@@ -269,16 +269,22 @@ if analyze_button:
                 f"News analysis failed: {error}"
             )
 
-# -------------------- MODEL DETAILS
+
+# -------------------- SYSTEM DETAILS
 
 st.divider()
 
-st.subheader("Model Details")
+st.subheader("System Details")
 
 st.markdown(
     """
-- **Model:** Logistic Regression
-- **Features:** TF-IDF
+- **Classifier:** Logistic Regression
+- **Classification features:** TF-IDF
+- **Embedding model:** all-MiniLM-L6-v2
+- **Embedding dimension:** 384
+- **Vector database:** ChromaDB
+- **Vector distance:** Cosine
+- **Indexed articles:** 1,000
 - **Dataset:** AG News
 - **Categories:** World, Sports, Business, Sci/Tech
 """
