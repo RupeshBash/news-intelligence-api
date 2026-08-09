@@ -8,3 +8,4 @@ streamlit
 matplotlib
 sentence-transformers
 chromadb==1.5.9
+fastapi[standard]

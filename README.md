@@ -7,8 +7,10 @@ The classifier uses TF-IDF and Logistic Regression to predict one of four AG
 News categories. The semantic-search workflow uses MiniLM embeddings and a
 persistent ChromaDB collection containing 1,000 sampled articles.
 
-The combined workflow is available through a Streamlit web interface. FastAPI
-endpoints are planned for the next development stage.
+The combined workflow is available through a Streamlit web interface.
+
+A FastAPI application foundation is also available with shared resource loading
+and a `GET /health` endpoint.
 
 ---
 
@@ -28,6 +30,10 @@ endpoints are planned for the next development stage.
 - Caches MiniLM and ChromaDB resources in Streamlit
 - Handles empty input, missing values, and processing errors
 - Loads saved resources without retraining during prediction
+- Provides a FastAPI application foundation
+- Loads MiniLM and ChromaDB once during FastAPI startup
+- Provides a `GET /health` endpoint
+- Provides interactive FastAPI documentation through `/docs`
 
 ---
 
@@ -64,6 +70,9 @@ User enters news text
         +--> Combined result displayed in Streamlit
 ```
 
+The same reusable processing functions are being exposed through FastAPI during
+Week 3.
+
 ---
 
 ## Main Files
@@ -79,7 +88,11 @@ User enters news text
 | `src/search_articles.py` | Embeds a query and retrieves similar articles |
 | `src/analyze_news.py` | Combines classification and semantic retrieval |
 | `app/streamlit_app.py` | Displays the combined workflow through Streamlit |
+| `app/fastapi_app.py` | Creates the FastAPI application, startup lifespan, shared resources, and health endpoint |
 | `models/news_classifier_pipeline.joblib` | Stores the vectorizer, classifier, and label mapping |
+| `docs/week1_progress.md` | Tracks Week 1 classical ML development |
+| `docs/week2_progress.md` | Tracks Week 2 embedding and semantic-search development |
+| `docs/week3_progress.md` | Tracks Week 3 FastAPI and API development |
 
 ---
 
@@ -181,7 +194,7 @@ It returns:
 - Category label
 - Confidence percentage
 
-### Semantic retrieval
+### Semantic Retrieval
 
 Semantic retrieval answers:
 
@@ -199,7 +212,7 @@ It returns:
 - Cosine similarity
 
 The predicted category and the category of the nearest stored article do not
-always need to match.
+always need to match because classification and retrieval solve different tasks.
 
 ---
 
@@ -207,49 +220,50 @@ always need to match.
 
 ```text
 news-intelligence-api/
-|-- app/
-|   |-- .gitkeep
-|   `-- streamlit_app.py
-|-- data/
-|   |-- raw/
-|   |-- processed/
-|   |   |-- article_embeddings.npy
-|   |   `-- article_metadata.csv
-|   `-- chroma_db/
-|-- docs/
-|   |-- week1_progress.md
-|   `-- week2_progress.md
-|-- models/
-|   `-- news_classifier_pipeline.joblib
-|-- notebooks/
-|   |-- 01_data_exploration.ipynb
-|   |-- 02_model_experiment.ipynb
-|   |-- 03_evaluation_model_saving.ipynb
-|   `-- 04_model_comparison.ipynb
-|-- screenshots/
-|   |-- confusion_matrix.png
-|   |-- streamlit_home.png
-|   |-- streamlit_prediction.png
-|   |-- streamlit_validation.png
-|   `-- day13_combined_streamlit_ui.png
-|-- src/
-|   |-- __init__.py
-|   |-- preprocessing.py
-|   |-- train_model.py
-|   |-- predict.py
-|   |-- embedding_demo.py
-|   |-- generate_embeddings.py
-|   |-- store_embeddings.py
-|   |-- search_articles.py
-|   `-- analyze_news.py
-|-- tests/
-|-- .gitignore
-|-- README.md
-`-- requirements.txt
+├── app/
+│   ├── streamlit_app.py
+│   └── fastapi_app.py
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   │   ├── article_embeddings.npy
+│   │   └── article_metadata.csv
+│   └── chroma_db/
+├── docs/
+│   ├── week1_progress.md
+│   ├── week2_progress.md
+│   └── week3_progress.md
+├── models/
+│   └── news_classifier_pipeline.joblib
+├── notebooks/
+│   ├── 01_data_exploration.ipynb
+│   ├── 02_model_experiment.ipynb
+│   ├── 03_evaluation_model_saving.ipynb
+│   └── 04_model_comparison.ipynb
+├── screenshots/
+│   ├── confusion_matrix.png
+│   ├── streamlit_home.png
+│   ├── streamlit_prediction.png
+│   ├── streamlit_validation.png
+│   └── day13_combined_streamlit_ui.png
+├── src/
+│   ├── __init__.py
+│   ├── preprocessing.py
+│   ├── train_model.py
+│   ├── predict.py
+│   ├── embedding_demo.py
+│   ├── generate_embeddings.py
+│   ├── store_embeddings.py
+│   ├── search_articles.py
+│   └── analyze_news.py
+├── tests/
+├── .gitignore
+├── README.md
+└── requirements.txt
 ```
 
-The saved model, generated embeddings, metadata, raw dataset, and local
-ChromaDB database are generated locally and remain ignored by Git.
+Generated embeddings, metadata, raw data, local ChromaDB files, Python caches,
+and virtual-environment files remain ignored by Git.
 
 ---
 
@@ -264,6 +278,8 @@ ChromaDB database are generated locally and remain ignored by Git.
 - SentenceTransformers
 - ChromaDB
 - Streamlit
+- FastAPI
+- Uvicorn
 - Matplotlib
 - Jupyter Notebook
 - Git and GitHub
@@ -370,10 +386,34 @@ python -m src.analyze_news
 python -m streamlit run app\streamlit_app.py
 ```
 
-The application normally opens at:
+The Streamlit application normally opens at:
 
 ```text
 http://localhost:8501
+```
+
+### Run the FastAPI application
+
+```powershell
+python -m uvicorn app.fastapi_app:app --reload
+```
+
+The API normally runs at:
+
+```text
+http://127.0.0.1:8000
+```
+
+Interactive API documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Current endpoint:
+
+```text
+GET /health
 ```
 
 ---
@@ -421,10 +461,59 @@ displays:
 - Cosine similarity
 - Article ID
 
-The MiniLM model and ChromaDB resources are cached using
-`st.cache_resource`, preventing unnecessary reloading during Streamlit reruns.
+The MiniLM model and ChromaDB resources are cached using `st.cache_resource`,
+preventing unnecessary reloading during Streamlit reruns.
 
 ![AI News Intelligence Streamlit interface](screenshots/day13_combined_streamlit_ui.png)
+
+---
+
+## FastAPI Interface
+
+The FastAPI application provides the API foundation for Week 3.
+
+The application uses a startup lifespan to load shared resources once:
+
+- MiniLM embedding model
+- ChromaDB client
+- ChromaDB article collection
+
+This avoids loading expensive resources again for every HTTP request.
+
+### Current Endpoint
+
+```text
+GET /health
+```
+
+The health endpoint confirms that the API and shared resources are ready.
+
+It reports information such as:
+
+- API status
+- service name
+- embedding-model readiness
+- ChromaDB collection name
+- indexed article count
+
+### Interactive Documentation
+
+FastAPI automatically provides interactive documentation at:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### Planned API Endpoints
+
+```text
+POST /predict
+POST /similar
+POST /analyze
+```
+
+These endpoints will reuse the existing classification, semantic-search, and
+combined-analysis functions rather than duplicating the machine-learning logic.
 
 ---
 
@@ -456,19 +545,17 @@ The MiniLM model and ChromaDB resources are cached using
 - The classifier and nearest article may have different category labels.
 - Some development messages are still printed in the terminal.
 - The application currently runs locally.
-- FastAPI endpoints have not yet been implemented.
+- The FastAPI application currently provides only the `/health` endpoint.
+- Prediction, similarity-search, and combined-analysis API endpoints are still pending.
 - Automated integration tests have not yet been added.
 
 ---
 
 ## Planned Improvements
 
-- Add FastAPI application structure
-- Add `GET /health`
 - Add `POST /predict`
 - Add `POST /similar`
 - Add `POST /analyze`
-- Load shared resources once during API startup
 - Add request and response validation
 - Add automated integration tests
 - Add a basic Dockerfile
@@ -481,6 +568,7 @@ The MiniLM model and ChromaDB resources are cached using
 
 - [View Week 1 Progress](docs/week1_progress.md)
 - [View Week 2 Progress](docs/week2_progress.md)
+- [View Week 3 Progress](docs/week3_progress.md)
 
 ---
 
@@ -497,5 +585,9 @@ Status: Complete
 
 Week 3
 FastAPI, testing, Docker basics, and final project polish
-Status: Planned
+Status: In Progress
+
+Day 15
+FastAPI application foundation, shared startup resources, and GET /health
+Status: Complete
 ```
