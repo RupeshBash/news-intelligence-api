@@ -9,8 +9,8 @@ persistent ChromaDB collection containing 1,000 sampled articles.
 
 The combined workflow is available through a Streamlit web interface.
 
-A FastAPI application foundation is also available with shared resource loading
-and a `GET /health` endpoint.
+A FastAPI application is also available with shared resource loading,
+a `GET /health` endpoint, and a validated `POST /predict` endpoint.
 
 ---
 
@@ -30,9 +30,12 @@ and a `GET /health` endpoint.
 - Caches MiniLM and ChromaDB resources in Streamlit
 - Handles empty input, missing values, and processing errors
 - Loads saved resources without retraining during prediction
-- Provides a FastAPI application foundation
+- Provides a FastAPI application
 - Loads MiniLM and ChromaDB once during FastAPI startup
 - Provides a `GET /health` endpoint
+- Provides a validated `POST /predict` endpoint
+- Returns class ID, category, and prediction confidence through FastAPI
+- Uses Pydantic models for prediction request and response validation
 - Provides interactive FastAPI documentation through `/docs`
 
 ---
@@ -70,8 +73,22 @@ User enters news text
         +--> Combined result displayed in Streamlit
 ```
 
-The same reusable processing functions are being exposed through FastAPI during
-Week 3.
+The reusable prediction and search functions are also being exposed through
+FastAPI endpoints during Week 3.
+
+Current API flow:
+
+```text
+Client request
+      ↓
+FastAPI
+      ↓
+Pydantic validation
+      ↓
+existing ML function
+      ↓
+structured JSON response
+```
 
 ---
 
@@ -88,7 +105,7 @@ Week 3.
 | `src/search_articles.py` | Embeds a query and retrieves similar articles |
 | `src/analyze_news.py` | Combines classification and semantic retrieval |
 | `app/streamlit_app.py` | Displays the combined workflow through Streamlit |
-| `app/fastapi_app.py` | Creates the FastAPI application, startup lifespan, shared resources, and health endpoint |
+| `app/fastapi_app.py` | Creates the FastAPI application, shared resources, validation models, health endpoint, and prediction endpoint |
 | `models/news_classifier_pipeline.joblib` | Stores the vectorizer, classifier, and label mapping |
 | `docs/week1_progress.md` | Tracks Week 1 classical ML development |
 | `docs/week2_progress.md` | Tracks Week 2 embedding and semantic-search development |
@@ -279,6 +296,7 @@ and virtual-environment files remain ignored by Git.
 - ChromaDB
 - Streamlit
 - FastAPI
+- Pydantic
 - Uvicorn
 - Matplotlib
 - Jupyter Notebook
@@ -321,7 +339,7 @@ python -m pip install -r requirements.txt
 Generated resources are ignored by Git and may need to be created locally after
 cloning the repository.
 
-### Train and save the classifier
+### Train and Save the Classifier
 
 ```powershell
 python -m src.train_model
@@ -329,7 +347,7 @@ python -m src.train_model
 
 This creates the local saved model package used during prediction.
 
-### Generate article embeddings
+### Generate Article Embeddings
 
 ```powershell
 python -m src.generate_embeddings
@@ -342,7 +360,7 @@ data/processed/article_embeddings.npy
 data/processed/article_metadata.csv
 ```
 
-### Store articles in ChromaDB
+### Store Articles in ChromaDB
 
 ```powershell
 python -m src.store_embeddings
@@ -356,31 +374,31 @@ This creates the persistent local ChromaDB collection.
 
 Run all commands from the project root.
 
-### Run standalone classification
+### Run Standalone Classification
 
 ```powershell
 python -m src.predict
 ```
 
-### Run the embedding demonstration
+### Run the Embedding Demonstration
 
 ```powershell
 python -m src.embedding_demo
 ```
 
-### Run standalone semantic search
+### Run Standalone Semantic Search
 
 ```powershell
 python -m src.search_articles
 ```
 
-### Run combined classification and retrieval
+### Run Combined Classification and Retrieval
 
 ```powershell
 python -m src.analyze_news
 ```
 
-### Run the Streamlit interface
+### Run the Streamlit Interface
 
 ```powershell
 python -m streamlit run app\streamlit_app.py
@@ -392,7 +410,7 @@ The Streamlit application normally opens at:
 http://localhost:8501
 ```
 
-### Run the FastAPI application
+### Run the FastAPI Application
 
 ```powershell
 python -m uvicorn app.fastapi_app:app --reload
@@ -410,10 +428,11 @@ Interactive API documentation:
 http://127.0.0.1:8000/docs
 ```
 
-Current endpoint:
+Current endpoints:
 
 ```text
-GET /health
+GET  /health
+POST /predict
 ```
 
 ---
@@ -470,33 +489,121 @@ preventing unnecessary reloading during Streamlit reruns.
 
 ## FastAPI Interface
 
-The FastAPI application provides the API foundation for Week 3.
+The FastAPI application exposes reusable project functionality through HTTP
+endpoints.
 
 The application uses a startup lifespan to load shared resources once:
 
 - MiniLM embedding model
 - ChromaDB client
 - ChromaDB article collection
+- Indexed article count
 
 This avoids loading expensive resources again for every HTTP request.
 
-### Current Endpoint
+### Current Endpoints
 
 ```text
-GET /health
+GET  /health
+POST /predict
 ```
+
+---
+
+### GET /health
 
 The health endpoint confirms that the API and shared resources are ready.
 
 It reports information such as:
 
 - API status
-- service name
-- embedding-model readiness
+- Service name
+- Embedding-model readiness
 - ChromaDB collection name
-- indexed article count
+- Indexed article count
 
-### Interactive Documentation
+Example:
+
+```text
+GET /health
+```
+
+---
+
+### POST /predict
+
+The prediction endpoint accepts news text and returns the classifier result.
+
+Example request:
+
+```json
+{
+  "news_text": "A company introduced a new computer chip that uses less electricity."
+}
+```
+
+Example response:
+
+```json
+{
+  "input_text": "A company introduced a new computer chip that uses less electricity.",
+  "prediction": {
+    "class_index": 4,
+    "category": "Sci/Tech",
+    "confidence_percent": 89.94
+  }
+}
+```
+
+The exact confidence depends on the saved classifier.
+
+The endpoint:
+
+```text
+receives JSON
+      ↓
+validates news_text
+      ↓
+cleans unnecessary whitespace
+      ↓
+calls predict_category_with_confidence()
+      ↓
+returns structured JSON
+```
+
+The FastAPI layer reuses the existing classifier instead of duplicating the
+machine-learning logic.
+
+---
+
+## API Validation
+
+The prediction endpoint uses Pydantic models to define request and response
+contracts.
+
+The request requires:
+
+```text
+news_text
+→ string
+→ minimum useful content required
+→ maximum length: 5,000 characters
+```
+
+Invalid requests such as:
+
+```text
+empty news_text
+whitespace-only news_text
+missing news_text
+incorrect data type
+```
+
+are rejected before the prediction function is called.
+
+---
+
+## Interactive API Documentation
 
 FastAPI automatically provides interactive documentation at:
 
@@ -504,16 +611,27 @@ FastAPI automatically provides interactive documentation at:
 http://127.0.0.1:8000/docs
 ```
 
-### Planned API Endpoints
+The documentation currently exposes:
 
 ```text
+GET  /health
 POST /predict
+```
+
+It also displays the request and response schemas generated from the Pydantic
+models.
+
+---
+
+## Planned API Endpoints
+
+```text
 POST /similar
 POST /analyze
 ```
 
-These endpoints will reuse the existing classification, semantic-search, and
-combined-analysis functions rather than duplicating the machine-learning logic.
+These endpoints will reuse the existing semantic-search and combined-analysis
+functions rather than duplicating processing logic.
 
 ---
 
@@ -545,19 +663,17 @@ combined-analysis functions rather than duplicating the machine-learning logic.
 - The classifier and nearest article may have different category labels.
 - Some development messages are still printed in the terminal.
 - The application currently runs locally.
-- The FastAPI application currently provides only the `/health` endpoint.
-- Prediction, similarity-search, and combined-analysis API endpoints are still pending.
-- Automated integration tests have not yet been added.
+- FastAPI semantic-search and combined-analysis endpoints are still pending.
+- Automated API and integration tests have not yet been added.
 
 ---
 
 ## Planned Improvements
 
-- Add `POST /predict`
 - Add `POST /similar`
 - Add `POST /analyze`
-- Add request and response validation
-- Add automated integration tests
+- Add request and response validation for the remaining endpoints
+- Add automated API and integration tests
 - Add a basic Dockerfile
 - Improve semantic-search evaluation
 - Increase the number of indexed articles when hardware permits
@@ -589,5 +705,9 @@ Status: In Progress
 
 Day 15
 FastAPI application foundation, shared startup resources, and GET /health
+Status: Complete
+
+Day 16
+POST /predict with Pydantic validation and structured prediction response
 Status: Complete
 ```

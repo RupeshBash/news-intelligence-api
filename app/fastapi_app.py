@@ -1,14 +1,73 @@
-#---------------------------------IMPORTS
+# -------------------- IMPORTS
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI 
+from fastapi import FastAPI
+from pydantic import (
+    BaseModel,
+    Field,
+    field_validator,
+)
+
+from src.predict import (
+    predict_category_with_confidence,
+)
 
 from src.search_articles import (
     load_embedding_model,
     load_chroma_collection,
 )
 
+
+
+
+#---------------------------------REQUEST MODELS
+
+class PredictRequest(BaseModel):
+    """Expected JSON body for prediction."""
+
+    #client must send at least one character
+    news_text: str = Field(
+        min_length=1,
+        max_length=5000,
+    )
+
+    @field_validator("news_text")
+    @classmethod
+    def clean_news_text(cls, value):
+        """Clean and reject empty text."""
+
+        #Remove repeated spaces and line breaks
+        cleaned_text = " ".join(
+            value.split()
+        )
+
+        #Reject whitespace-only input
+        if not cleaned_text:
+            raise ValueError(
+                "news_text cannot be empty."
+            )
+
+        return cleaned_text
+
+
+
+
+#--------------------------RESPONSE MODELS
+
+class PredictionResult(BaseModel):
+    """Prediction details."""
+
+    class_index: int
+    category: str
+    confidence_percent: float
+
+
+class PredictResponse(BaseModel):
+    """Final response returned by /predict."""
+
+    input_text: str
+    prediction: PredictionResult
 
 
 #--------------------------------SHARED RESOURCES
@@ -102,3 +161,42 @@ def health_check():
         ),
     }
 
+
+
+
+
+#----------------------PREDICTION ENDPOINT
+
+@app.post(
+    "/predict",
+    response_model=PredictResponse,
+)
+def predict_news(
+    request: PredictRequest,
+):
+    """Predict the category of news text."""
+
+    #Reuse the existing ML prediction function
+    (
+        class_index,
+        category,
+        confidence_percent,
+    ) = predict_category_with_confidence(
+        request.news_text
+    )
+
+    # Return normal JSON-friendly values
+    return {
+        "input_text": request.news_text,
+        "prediction": {
+            "class_index": int(
+                class_index
+            ),
+            "category": str(
+                category
+            ),
+            "confidence_percent": float(
+                confidence_percent
+            ),
+        },
+    }
