@@ -15,6 +15,10 @@ from src.predict import (
     predict_category_with_confidence,
 )
 
+from src.analyze_news import (
+    analyze_news,
+)
+
 from src.search_articles import (
     load_embedding_model,
     load_chroma_collection,
@@ -89,6 +93,30 @@ class SimilarRequest(BaseModel):
 
         return cleaned_text
 
+
+
+
+
+
+class AnalyzeResponse(BaseModel):
+    """Combined prediction and search response."""
+
+    input_text: str
+    prediction: PredictionResult
+    requested_results: int
+    similar_articles_returned: int
+    search_time_seconds: float
+    similar_articles: list[SimilarArticle]
+
+
+
+
+
+class AnalyzeRequest(SimilarRequest):
+    """Input required for combined analysis."""
+
+    # Reuse news_text and top_k validation.
+    pass
 
 # -------------------- PREDICTION RESPONSE MODELS
 
@@ -352,3 +380,96 @@ def find_similar_articles(
         ),
         "similar_articles": similar_articles,
     }
+
+
+
+# -------------------- ANALYZE ENDPOINT
+
+@app.post(
+    "/analyze",
+    response_model=AnalyzeResponse,
+)
+def analyze_news_endpoint(
+    request: AnalyzeRequest,
+):
+    """Classify news and find similar articles."""
+
+    # Reuse the model loaded at startup.
+    embedding_model = shared_resources[
+        "embedding_model"
+    ]
+
+    # Reuse the ChromaDB collection.
+    article_collection = shared_resources[
+        "article_collection"
+    ]
+
+    # Run the existing combined workflow.
+    analysis_result = analyze_news(
+        news_text=request.news_text,
+        embedding_model=embedding_model,
+        article_collection=article_collection,
+        n_results=request.top_k,
+    )
+
+    # Prepare articles for the API response.
+    api_articles = []
+
+    for article in analysis_result[
+        "similar_articles"
+    ]:
+        api_articles.append(
+            {
+                "rank": int(article["rank"]),
+                "article_id": str(
+                    article["article_id"]
+                ),
+                "title": str(article["title"]),
+                "category": str(
+                    article["label_name"]
+                ),
+                "distance": float(
+                    article["distance"]
+                ),
+                "cosine_similarity": float(
+                    article[
+                        "cosine_similarity"
+                    ]
+                ),
+            }
+        )
+
+    #Return the combined API response
+    return {
+        "input_text": analysis_result[
+            "input_text"
+        ],
+        "prediction": {
+            "class_index": analysis_result[
+                "predicted_class_index"
+            ],
+            "category": analysis_result[
+                "predicted_category"
+            ],
+            "confidence_percent": (
+                analysis_result[
+                    "confidence_percent"
+                ]
+            ),
+        },
+        "requested_results": request.top_k,
+        "similar_articles_returned": (
+            analysis_result[
+                "similar_articles_returned"
+            ]
+        ),
+        "search_time_seconds": (
+            analysis_result[
+                "search_time_seconds"
+            ]
+        ),
+        "similar_articles": api_articles
+    }
+
+
+
