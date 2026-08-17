@@ -194,3 +194,35 @@ A misspelled response key caused a `ResponseValidationError`.
 ### Current limitation
 
 The API currently runs locally and has not yet been containerized.
+
+
+---
+
+## Day 19 — Dockerize FastAPI Application
+
+### What I completed
+
+- created a basic `Dockerfile`
+- created `.dockerignore`
+- built the `ai-news-intelligence` Docker image
+- ran FastAPI inside a Linux Docker container
+- mapped host port `8000` to container port `8000`
+- verified `/health`, `/predict`, `/similar`, and `/analyze`
+- confirmed MiniLM and ChromaDB load correctly inside Docker
+
+### Workflow
+
+```text
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker image
+    ↓
+docker run
+    ↓
+Linux container
+    ↓
+Uvicorn
+    ↓
+FastAPI

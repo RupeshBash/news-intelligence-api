@@ -34,7 +34,7 @@ from src.search_articles import (
 class PredictRequest(BaseModel):
     """Expected JSON body for prediction."""
 
-    # Client must send at least one character.
+    # News text sent by the client.
     news_text: str = Field(
         min_length=1,
         max_length=5000,
@@ -68,7 +68,7 @@ class SimilarRequest(BaseModel):
         max_length=5000,
     )
 
-    # Number of similar articles to request.
+    # Number of similar articles to return.
     top_k: StrictInt = Field(
         default=5,
         ge=1,
@@ -94,29 +94,12 @@ class SimilarRequest(BaseModel):
         return cleaned_text
 
 
-
-
-
-
-class AnalyzeResponse(BaseModel):
-    """Combined prediction and search response."""
-
-    input_text: str
-    prediction: PredictionResult
-    requested_results: int
-    similar_articles_returned: int
-    search_time_seconds: float
-    similar_articles: list[SimilarArticle]
-
-
-
-
-
 class AnalyzeRequest(SimilarRequest):
     """Input required for combined analysis."""
 
     # Reuse news_text and top_k validation.
     pass
+
 
 # -------------------- PREDICTION RESPONSE MODELS
 
@@ -158,6 +141,19 @@ class SimilarResponse(BaseModel):
     similar_articles: list[SimilarArticle]
 
 
+# -------------------- ANALYZE RESPONSE MODEL
+
+class AnalyzeResponse(BaseModel):
+    """Combined prediction and search response."""
+
+    input_text: str
+    prediction: PredictionResult
+    requested_results: int
+    similar_articles_returned: int
+    search_time_seconds: float
+    similar_articles: list[SimilarArticle]
+
+
 # -------------------- SHARED RESOURCES
 
 shared_resources = {}
@@ -193,7 +189,7 @@ async def lifespan(app: FastAPI):
         article_collection
     )
 
-    # Store the total indexed article count.
+    # Store the indexed article count.
     shared_resources["indexed_articles"] = (
         article_collection.count()
     )
@@ -201,7 +197,7 @@ async def lifespan(app: FastAPI):
     # API starts accepting requests here.
     yield
 
-    # Remove references during shutdown.
+    # Remove shared references during shutdown.
     shared_resources.clear()
 
 
@@ -259,7 +255,7 @@ def predict_news(
 ):
     """Predict the category of news text."""
 
-    # Reuse the existing ML prediction function.
+    # Reuse the existing prediction function.
     (
         class_index,
         category,
@@ -296,7 +292,7 @@ def find_similar_articles(
 ):
     """Find semantically similar articles."""
 
-    # Reuse the model loaded during startup.
+    # Reuse the model loaded at startup.
     embedding_model = shared_resources[
         "embedding_model"
     ]
@@ -311,7 +307,7 @@ def find_similar_articles(
         request.news_text
     )
 
-    # Convert the text into a query embedding.
+    # Convert text into a query embedding.
     query_embedding = (
         generate_query_embedding(
             embedding_model,
@@ -329,15 +325,14 @@ def find_similar_articles(
         n_results=request.top_k,
     )
 
-    # Convert nested ChromaDB results
-    # into clean article dictionaries.
+    # Convert nested ChromaDB output.
     formatted_articles = (
         format_search_results(
             raw_search_result
         )
     )
 
-    # Prepare the API response articles.
+    # Prepare API response articles.
     similar_articles = []
 
     for article in formatted_articles:
@@ -382,7 +377,6 @@ def find_similar_articles(
     }
 
 
-
 # -------------------- ANALYZE ENDPOINT
 
 @app.post(
@@ -420,13 +414,19 @@ def analyze_news_endpoint(
     ]:
         api_articles.append(
             {
-                "rank": int(article["rank"]),
+                "rank": int(
+                    article["rank"]
+                ),
                 "article_id": str(
                     article["article_id"]
                 ),
-                "title": str(article["title"]),
+                "title": str(
+                    article.get("title")
+                    or "Untitled"
+                ),
                 "category": str(
-                    article["label_name"]
+                    article.get("label_name")
+                    or "Unknown"
                 ),
                 "distance": float(
                     article["distance"]
@@ -439,19 +439,23 @@ def analyze_news_endpoint(
             }
         )
 
-    #Return the combined API response
+    # Return the combined API response.
     return {
         "input_text": analysis_result[
             "input_text"
         ],
         "prediction": {
-            "class_index": analysis_result[
-                "predicted_class_index"
-            ],
-            "category": analysis_result[
-                "predicted_category"
-            ],
-            "confidence_percent": (
+            "class_index": int(
+                analysis_result[
+                    "predicted_class_index"
+                ]
+            ),
+            "category": str(
+                analysis_result[
+                    "predicted_category"
+                ]
+            ),
+            "confidence_percent": float(
                 analysis_result[
                     "confidence_percent"
                 ]
@@ -463,13 +467,10 @@ def analyze_news_endpoint(
                 "similar_articles_returned"
             ]
         ),
-        "search_time_seconds": (
+        "search_time_seconds": float(
             analysis_result[
                 "search_time_seconds"
             ]
         ),
-        "similar_articles": api_articles
+        "similar_articles": api_articles,
     }
-
-
-

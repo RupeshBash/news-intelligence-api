@@ -1,0 +1,31 @@
+# Local Python environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Git files
+.git/
+.gitignore
+
+# Development-only files
+notebooks/
+screenshots/
+docs/
+.ipynb_checkpoints/
+
+# Environment files
+.env
+
+# Large source/generated data not needed by API
+data/raw/
+data/full/
+data/processed/article_embeddings.npy
+data/processed/article_metadata.csv
+
+# OS files
+.DS_Store
+Thumbs.db
